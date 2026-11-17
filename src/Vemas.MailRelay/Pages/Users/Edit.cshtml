@@ -1,0 +1,53 @@
+@page
+@model Vemas.MailRelay.Pages.Users.EditModel
+@{
+    ViewData["Title"] = Model.IsNew ? "Neuer SMTP-Benutzer" : $"SMTP-Benutzer {Model.Input.Login}";
+}
+
+<p><a href="/Users">‹ SMTP-Benutzer</a></p>
+<h1>@ViewData["Title"]</h1>
+
+<form method="post" class="panel">
+    <input type="hidden" asp-for="Input.SmtpUserId" />
+    <div asp-validation-summary="ModelOnly" class="error-text"></div>
+
+    <div class="grid2">
+        <div class="field">
+            <label asp-for="Input.Login">Login (Benutzername in Database Mail / SSRS)</label>
+            <input type="text" asp-for="Input.Login" autocomplete="off" />
+            <span asp-validation-for="Input.Login" class="error-text"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Input.NewPassword">Passwort</label>
+            <input type="password" asp-for="Input.NewPassword" autocomplete="new-password"
+                   placeholder="@(Model.HasPassword ? "gesetzt – leer lassen zum Behalten" : "mindestens 12 Zeichen")" />
+            <span asp-validation-for="Input.NewPassword" class="error-text"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Input.ProfileId">Versandprofil</label>
+            <select asp-for="Input.ProfileId">
+                <option value="0">– bitte wählen –</option>
+                @foreach (var profile in Model.Profiles)
+                {
+                    <option value="@profile.ProfileId">@profile.Name (@profile.DefaultSender)</option>
+                }
+            </select>
+            <span asp-validation-for="Input.ProfileId" class="error-text"></span>
+        </div>
+        <div class="field">
+            <label><input type="checkbox" asp-for="Input.IsActive" /> Benutzer aktiv</label>
+        </div>
+    </div>
+
+    <div class="field">
+        <label asp-for="Input.AllowedIps">Erlaubte Client-IPs (z.B. 10.0.0.5; 10.0.1.0/24)</label>
+        <textarea asp-for="Input.AllowedIps"></textarea>
+        <span asp-validation-for="Input.AllowedIps" class="error-text"></span>
+        <span class="hint">Leer = keine Anmeldung möglich. Hier die IPs des SQL- und SSRS-Servers eintragen.</span>
+    </div>
+
+    <div class="actions">
+        <button type="submit" class="primary">Speichern</button>
+        <a class="button" href="/Users">Abbrechen</a>
+    </div>
+</form>

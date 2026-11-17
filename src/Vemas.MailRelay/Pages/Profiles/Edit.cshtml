@@ -1,0 +1,103 @@
+@page
+@model Vemas.MailRelay.Pages.Profiles.EditModel
+@{
+    ViewData["Title"] = Model.IsNew ? "Neues Profil" : $"Profil {Model.Input.Name}";
+}
+
+<p><a href="/Profiles">‹ Profile</a></p>
+<h1>@ViewData["Title"]</h1>
+
+<form method="post" class="panel">
+    <input type="hidden" asp-for="Input.ProfileId" />
+    <div asp-validation-summary="ModelOnly" class="error-text"></div>
+
+    <h2 style="margin-top:0">Exchange Online (App-Registrierung)</h2>
+    <div class="grid2">
+        <div class="field">
+            <label asp-for="Input.Name">Name</label>
+            <input type="text" asp-for="Input.Name" />
+            <span asp-validation-for="Input.Name" class="error-text"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Input.TenantId">Tenant-ID (Verzeichnis-ID oder Domain)</label>
+            <input type="text" asp-for="Input.TenantId" />
+            <span asp-validation-for="Input.TenantId" class="error-text"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Input.ClientId">Client-ID (Anwendungs-ID)</label>
+            <input type="text" asp-for="Input.ClientId" />
+            <span asp-validation-for="Input.ClientId" class="error-text"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Input.NewSecret">Client Secret (Wert)</label>
+            <input type="password" asp-for="Input.NewSecret" autocomplete="new-password"
+                   placeholder="@(Model.HasSecret ? "hinterlegt – leer lassen zum Behalten" : "erforderlich")" />
+            <span asp-validation-for="Input.NewSecret" class="error-text"></span>
+            <span class="hint">Wird verschlüsselt gespeichert und nie wieder angezeigt.</span>
+        </div>
+        <div class="field">
+            <label asp-for="Input.SecretExpiresAt">Secret gültig bis</label>
+            <input type="date" asp-for="Input.SecretExpiresAt" />
+            <span class="hint">Für die Ablaufwarnung (aus dem Entra-Portal übernehmen).</span>
+        </div>
+        <div class="field">
+            <label asp-for="Input.CustomerId">Kunde (Zugriff aus NextGen)</label>
+            <select asp-for="Input.CustomerId">
+                <option value="">– kein Kunde, nur Hoster –</option>
+                @foreach (var customer in Model.Customers)
+                {
+                    <option value="@customer.CustomerId">@customer.Name (@customer.ShortName)</option>
+                }
+            </select>
+            <span class="hint">Der Kunde sieht dieses Profil, dessen Mails und SMTP-Benutzer in seiner NextGen-Instanz.</span>
+        </div>
+        <div class="field">
+            <label><input type="checkbox" asp-for="Input.IsActive" /> Profil aktiv</label>
+        </div>
+    </div>
+
+    <h2>Absender</h2>
+    <div class="grid2">
+        <div class="field">
+            <label asp-for="Input.SenderMode">Modus</label>
+            <select asp-for="Input.SenderMode">
+                <option value="FixedSender">Fester Absender – immer das Standard-Postfach</option>
+                <option value="SendAs">Senden als – Absender aus der Mail, über das Standard-Postfach</option>
+            </select>
+            <span class="hint">Fester Absender: der ursprüngliche Absender wird als Antwortadresse (Reply-To) übernommen.<br />
+                Senden als: das Standard-Postfach braucht in Exchange das Recht „Senden als“ auf jeden Absender.</span>
+        </div>
+        <div class="field">
+            <label asp-for="Input.DefaultSender">Standard-Postfach (meldet sich an und versendet)</label>
+            <input type="email" asp-for="Input.DefaultSender" />
+            <span asp-validation-for="Input.DefaultSender" class="error-text"></span>
+            <span class="hint">Nur auf dieses Postfach braucht die App Exchange-Rechte (Mail.Send, Mail.ReadWrite).</span>
+        </div>
+    </div>
+    <div class="field">
+        <label asp-for="Input.AllowedSenders">Erlaubte Absender (nur „Senden als“) – eine Adresse oder *@@domain.de pro Zeile</label>
+        <textarea asp-for="Input.AllowedSenders"></textarea>
+        <span asp-validation-for="Input.AllowedSenders" class="error-text"></span>
+        <span class="hint">Filter beim SMTP-Eingang; das Standard-Postfach ist immer erlaubt. Zusätzlich muss das Standard-Postfach in Exchange „Senden als“ auf diese Absender haben:
+            Add-RecipientPermission -Identity &lt;Absender&gt; -Trustee &lt;Standard-Postfach&gt; -AccessRights SendAs</span>
+    </div>
+
+    <div class="actions">
+        <button type="submit" class="primary">Speichern</button>
+        <a class="button" href="/Profiles">Abbrechen</a>
+    </div>
+</form>
+
+@if (!Model.IsNew)
+{
+    <h2>Testmail</h2>
+    <form method="post" asp-page-handler="TestMail" asp-route-id="@Model.Input.ProfileId" class="panel filters">
+        <div class="field" style="flex:1;min-width:240px">
+            <label for="testRecipient">Empfänger</label>
+            <input type="email" id="testRecipient" name="testRecipient" style="width:100%" required />
+        </div>
+        <div class="field">
+            <button type="submit">Testmail senden</button>
+        </div>
+    </form>
+}

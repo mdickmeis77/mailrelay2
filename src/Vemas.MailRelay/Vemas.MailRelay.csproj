@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <RootNamespace>Vemas.MailRelay</RootNamespace>
+    <AssemblyName>Vemas.MailRelay</AssemblyName>
+    <Version>1.0.0</Version>
+    <Product>Vemas.MailRelay</Product>
+    <Description>SMTP-Relay von SQL Server / SSRS zu Exchange Online (Microsoft Graph, OAuth)</Description>
+
+    <!-- Auslieferung als einzelne, self-contained EXE -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>embedded</DebugType>
+
+    <!-- Kein IIS-Hosting und keine wwwroot-Dateien: nur EXE + appsettings.json im Ausgabeordner -->
+    <IsWebConfigTransformDisabled>true</IsWebConfigTransformDisabled>
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="10.0.15" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.15" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.92.0" />
+    <PackageReference Include="MimeKit" Version="5.0.0" />
+    <PackageReference Include="SmtpServer" Version="11.1.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
+  <!-- Publish direkt in den Ordner install (neben die Installationsskripte), der komplett auf den Server kopiert wird -->
+  <PropertyGroup>
+    <PublishDir>$(MSBuildThisFileDirectory)..\..\install\</PublishDir>
+  </PropertyGroup>
+
+</Project>

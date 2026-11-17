@@ -1,0 +1,17 @@
+bin/
+obj/
+publish/
+*.user
+.vs/
+
+
+# Publish-Ergebnis im Ordner install (nur die Skripte sind versioniert)
+install/*.exe
+install/*.pdb
+install/appsettings*.json
+
+# von Visual Studio/dotnet erzeugt
+src/**/Properties/launchSettings.json
+
+# lokale Entwicklungsdaten (Tests, Logs, Verlauf)
+entwicklung/

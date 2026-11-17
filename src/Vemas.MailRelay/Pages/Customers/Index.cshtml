@@ -1,0 +1,51 @@
+@page
+@model Vemas.MailRelay.Pages.Customers.IndexModel
+@{
+    ViewData["Title"] = "Kunden";
+}
+
+<h1>Kunden</h1>
+<p class="muted">Kunden, die das Relay aus ihrer NextGen-Instanz nutzen. Erkannt wird ein Kunde am SQL-Server-Login, mit dem seine NextGen-Instanz auf die Datenbank zugreift.</p>
+
+<div class="actions">
+    <a class="button primary" href="/Customers/Edit">Neuer Kunde</a>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Kurzname</th><th>Status</th><th>Logins</th><th>Profile</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in Model.Customers)
+            {
+                <tr>
+                    <td><a href="/Customers/Edit?id=@customer.CustomerId">@customer.Name</a></td>
+                    <td>@customer.ShortName</td>
+                    <td>
+                        @if (customer.IsActive)
+                        {
+                            <span class="badge ok">aktiv</span>
+                        }
+                        else
+                        {
+                            <span class="badge muted">gesperrt</span>
+                        }
+                    </td>
+                    <td class="mono">
+                        @if (customer.Logins.Count == 0)
+                        {
+                            <span class="badge warn">kein Login</span>
+                        }
+                        @string.Join(", ", customer.Logins)
+                    </td>
+                    <td>@(Model.ProfileCounts.TryGetValue(customer.CustomerId, out int count) ? count : 0)</td>
+                </tr>
+            }
+            @if (Model.Customers.Count == 0)
+            {
+                <tr><td colspan="5" class="muted">Noch kein Kunde angelegt.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

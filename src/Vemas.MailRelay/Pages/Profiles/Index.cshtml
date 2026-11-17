@@ -1,0 +1,66 @@
+@page
+@using Vemas.MailRelay.Configuration
+@model Vemas.MailRelay.Pages.Profiles.IndexModel
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<h1>Versandprofile</h1>
+<p class="muted">Ein Profil entspricht einer App-Registrierung in einem Microsoft-365-Tenant.</p>
+
+<div class="actions">
+    <a class="button primary" href="/Profiles/Edit">Neues Profil</a>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Kunde</th><th>Status</th><th>Modus</th><th>Standard-Postfach</th><th>Tenant</th><th>Client Secret</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var profile in Model.Profiles)
+            {
+                int? days = SecretExpiry.DaysRemaining(profile);
+                <tr>
+                    <td><a href="/Profiles/Edit?id=@profile.ProfileId">@profile.Name</a></td>
+                    <td>@(profile.CustomerName ?? "–")</td>
+                    <td>
+                        @if (profile.IsActive)
+                        {
+                            <span class="badge ok">aktiv</span>
+                        }
+                        else
+                        {
+                            <span class="badge muted">inaktiv</span>
+                        }
+                    </td>
+                    <td>@(profile.SenderMode == SenderMode.FixedSender ? "Fester Absender" : "Senden als")</td>
+                    <td>@profile.DefaultSender</td>
+                    <td class="mono">@profile.TenantId</td>
+                    <td>
+                        @if (!profile.HasSecret)
+                        {
+                            <span class="badge err">fehlt</span>
+                        }
+                        else if (days is null)
+                        {
+                            <span class="muted">hinterlegt (Ablauf unbekannt)</span>
+                        }
+                        else if (days < 0)
+                        {
+                            <span class="badge err">abgelaufen</span>
+                        }
+                        else
+                        {
+                            <span class="@(days <= 30 ? "badge warn" : "")">bis @profile.SecretExpiresAt?.ToString("dd.MM.yyyy")</span>
+                        }
+                    </td>
+                </tr>
+            }
+            @if (Model.Profiles.Count == 0)
+            {
+                <tr><td colspan="7" class="muted">Noch kein Profil angelegt.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

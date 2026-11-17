@@ -1,0 +1,27 @@
+@model Vemas.MailRelay.Web.AntiforgeryDiagnosis
+@{
+    ViewData["Title"] = "Formular abgelehnt";
+}
+
+<h1>Formular wurde nicht gespeichert</h1>
+
+<div class="alert err">@Model.Reason</div>
+
+<div class="panel">
+    <p style="margin-top:0"><strong>Was tun?</strong> @Model.Advice</p>
+    <div class="actions">
+        <a class="button primary" href="@Model.ReturnUrl">Formular neu laden</a>
+        <a class="button" href="javascript:history.back()">Zurück (Eingaben im Browser)</a>
+    </div>
+</div>
+
+<h2>Technische Angaben</h2>
+<div class="panel">
+    <dl class="props">
+        <dt>Angemeldet als</dt><dd>@Model.UserName</dd>
+        <dt>Sicherheits-Cookie gesendet</dt><dd>@(Model.HasCookie ? "ja" : "nein")</dd>
+        <dt>Sicherheitsfeld im Formular</dt><dd>@(Model.HasFormField ? "ja" : "nein")</dd>
+        <dt>Meldung</dt><dd class="mono">@Model.TechnicalMessage</dd>
+    </dl>
+    <p class="hint">Dieselben Angaben stehen in der Windows-Ereignisanzeige (Quelle Vemas.MailRelay).</p>
+</div>

@@ -1,0 +1,99 @@
+@page
+@model Vemas.MailRelay.Pages.Messages.DetailsModel
+@{
+    var s = Model.Details.Summary;
+    ViewData["Title"] = $"Mail {s.MessageId}";
+}
+
+<p><a href="/Messages">‹ Protokoll</a></p>
+<h1>Mail @s.MessageId <span class="@Format.StatusCss(s.Status)">@Format.StatusText(s.Status)</span></h1>
+
+<div class="actions">
+    @if (Model.CanResend)
+    {
+        <form method="post" asp-page-handler="Resend" asp-route-id="@s.MessageId" class="inline">
+            <button type="submit" class="primary">Neu senden</button>
+        </form>
+    }
+    @if (Model.CanCancel)
+    {
+        <form method="post" asp-page-handler="Cancel" asp-route-id="@s.MessageId" class="inline">
+            <button type="submit">Versand abbrechen</button>
+        </form>
+    }
+    @if (s.HasMime)
+    {
+        <a class="button" asp-page-handler="Eml" asp-route-id="@s.MessageId">Als .eml herunterladen</a>
+    }
+</div>
+
+<div class="panel">
+    <dl class="props">
+        <dt>Betreff</dt><dd>@s.Subject</dd>
+        <dt>Von (Header)</dt><dd>@s.HeaderFrom</dd>
+        <dt>An / Cc (Header)</dt><dd>@Model.Details.HeaderTo</dd>
+        <dt>Envelope-Absender</dt><dd>@Model.Details.EnvelopeFrom</dd>
+        <dt>Envelope-Empfänger</dt><dd>@s.EnvelopeTo</dd>
+        <dt>Eingang</dt><dd>@Format.LocalTime(s.ReceivedAt)</dd>
+        <dt>Gesendet</dt><dd>@Format.LocalTime(s.SentAt)</dd>
+        @if (s.Status == MessageStatus.Retry)
+        {
+            <dt>Nächster Versuch</dt><dd>@Format.LocalTime(Model.Details.NextAttemptAt)</dd>
+        }
+        <dt>SMTP-Benutzer</dt><dd>@(s.SmtpUser ?? "–")</dd>
+        <dt>Profil</dt><dd>@s.ProfileName</dd>
+        <dt>Client-IP</dt><dd>@Model.Details.ClientIp</dd>
+        <dt>Größe</dt><dd>@Format.Size(s.SizeBytes)</dd>
+        <dt>MIME-Inhalt</dt>
+        <dd>
+            @if (s.HasMime)
+            {
+                <span>gespeichert</span>
+            }
+            else
+            {
+                <span class="muted">gelöscht am @Format.LocalTime(Model.Details.MimePurgedAt) (Aufbewahrungsfrist)</span>
+            }
+        </dd>
+        @if (!string.IsNullOrEmpty(s.LastError))
+        {
+            <dt>Letzter Fehler</dt><dd class="error-text">@s.LastError</dd>
+        }
+    </dl>
+</div>
+
+<h2>Verlauf</h2>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Zeitpunkt</th><th>Aktion</th><th>Ergebnis</th><th>HTTP</th><th>Fehler</th><th>Request-ID</th><th>Benutzer</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var attempt in Model.Details.Attempts)
+            {
+                <tr>
+                    <td style="white-space:nowrap">@Format.LocalTime(attempt.AttemptAt)</td>
+                    <td>@Format.AttemptType(attempt.AttemptType)</td>
+                    <td>
+                        @if (attempt.Success == true)
+                        {
+                            <span class="badge ok">OK</span>
+                        }
+                        else if (attempt.Success == false)
+                        {
+                            <span class="badge err">Fehler</span>
+                        }
+                    </td>
+                    <td>@attempt.HttpStatus</td>
+                    <td class="error-text">@attempt.ErrorText</td>
+                    <td class="mono">@attempt.GraphRequestId</td>
+                    <td>@attempt.UserName</td>
+                </tr>
+            }
+            @if (Model.Details.Attempts.Count == 0)
+            {
+                <tr><td colspan="7" class="muted">Noch kein Versuch.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,60 @@
+@page
+@using Vemas.MailRelay.Configuration
+@model IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h1>Dashboard</h1>
+
+<div class="tiles">
+    <a class="tile" href="/Messages?Status=Sent" style="text-decoration:none;color:inherit">
+        <div class="value">@Model.Stats.SentToday</div>
+        <div class="label">Heute gesendet</div>
+    </a>
+    <a class="tile" href="/Messages?Status=Failed" style="text-decoration:none;color:inherit">
+        <div class="value" style="color:var(--err)">@Model.Stats.FailedToday</div>
+        <div class="label">Heute fehlgeschlagen</div>
+    </a>
+    <a class="tile" href="/Messages?Status=Queued" style="text-decoration:none;color:inherit">
+        <div class="value">@Model.Stats.InQueue</div>
+        <div class="label">In der Queue</div>
+    </a>
+    <a class="tile" href="/Messages?Status=Retry" style="text-decoration:none;color:inherit">
+        <div class="value" style="color:var(--warn)">@Model.Stats.InRetry</div>
+        <div class="label">Warten auf Wiederholung</div>
+    </a>
+</div>
+
+<p class="muted">Letzter erfolgreicher Versand: @Format.LocalTime(Model.Stats.LastSentAt)</p>
+
+@if (Model.ExpiringProfiles.Count > 0 || Model.ProfilesWithoutSecret.Count > 0)
+{
+    <h2>Handlungsbedarf</h2>
+    <div class="panel">
+        <ul style="margin:0;padding-left:20px">
+            @foreach (var profile in Model.ExpiringProfiles)
+            {
+                int days = SecretExpiry.DaysRemaining(profile) ?? 0;
+                <li>
+                    <a href="/Profiles/Edit?id=@profile.ProfileId">@profile.Name</a>:
+                    @if (days < 0)
+                    {
+                        <span class="badge err">Client Secret abgelaufen seit @profile.SecretExpiresAt?.ToString("dd.MM.yyyy")</span>
+                    }
+                    else
+                    {
+                        <span class="badge warn">Client Secret läuft in @days Tag(en) ab (@profile.SecretExpiresAt?.ToString("dd.MM.yyyy"))</span>
+                    }
+                </li>
+            }
+            @foreach (var profile in Model.ProfilesWithoutSecret)
+            {
+                <li>
+                    <a href="/Profiles/Edit?id=@profile.ProfileId">@profile.Name</a>:
+                    <span class="badge err">kein Client Secret hinterlegt</span>
+                </li>
+            }
+        </ul>
+    </div>
+}

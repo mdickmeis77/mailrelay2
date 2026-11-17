@@ -1,0 +1,126 @@
+@page
+@model Vemas.MailRelay.Pages.Messages.IndexModel
+@{
+    ViewData["Title"] = "Protokoll";
+}
+
+<h1>Protokoll</h1>
+
+<form method="get" class="panel filters">
+    <div class="field">
+        <label for="Status">Status</label>
+        <select id="Status" name="Status">
+            <option value="">alle</option>
+            @foreach (var status in MessageStatus.All)
+            {
+                <option value="@status" selected="@(Model.Status == status)">@Format.StatusText(status)</option>
+            }
+        </select>
+    </div>
+    @if (Model.Customers.Count > 0)
+    {
+        <div class="field">
+            <label for="CustomerId">Kunde</label>
+            <select id="CustomerId" name="CustomerId">
+                <option value="">alle</option>
+                @foreach (var customer in Model.Customers)
+                {
+                    <option value="@customer.CustomerId" selected="@(Model.CustomerId == customer.CustomerId)">@customer.ShortName</option>
+                }
+            </select>
+        </div>
+    }
+    <div class="field">
+        <label for="FromDate">Von</label>
+        <input type="date" id="FromDate" name="FromDate" value="@Model.FromDate?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="field">
+        <label for="ToDate">Bis</label>
+        <input type="date" id="ToDate" name="ToDate" value="@Model.ToDate?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="field" style="flex:1;min-width:200px">
+        <label for="Search">Absender, Empfänger oder Betreff</label>
+        <input type="text" id="Search" name="Search" value="@Model.Search" style="width:100%" />
+    </div>
+    <div class="field">
+        <button type="submit" class="primary">Filtern</button>
+    </div>
+</form>
+
+<form method="post">
+    @* Filter mitsenden, damit nach der Aktion dieselbe Ansicht erscheint *@
+    <input type="hidden" name="Status" value="@Model.Status" />
+    <input type="hidden" name="CustomerId" value="@Model.CustomerId" />
+    <input type="hidden" name="FromDate" value="@Model.FromDate?.ToString("yyyy-MM-dd")" />
+    <input type="hidden" name="ToDate" value="@Model.ToDate?.ToString("yyyy-MM-dd")" />
+    <input type="hidden" name="Search" value="@Model.Search" />
+    <input type="hidden" name="p" value="@Model.PageNumber" />
+    <div class="actions">
+        <button type="submit" asp-page-handler="Resend">Auswahl neu senden</button>
+        <button type="submit" asp-page-handler="Cancel">Auswahl abbrechen</button>
+        <span class="muted" style="align-self:center">@Model.Total Mail(s)</span>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th><input type="checkbox" title="Alle auswählen" onclick="document.querySelectorAll('input[name=selected]').forEach(c => c.checked = this.checked)" /></th>
+                    <th>Nr.</th>
+                    <th>Eingang</th>
+                    <th>Status</th>
+                    <th>Kunde</th>
+                    <th>Von</th>
+                    <th>An</th>
+                    <th>Betreff</th>
+                    <th>Größe</th>
+                    <th>Versuche</th>
+                    <th>Letzter Fehler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td><input type="checkbox" name="selected" value="@item.MessageId" /></td>
+                        <td><a href="/Messages/Details?id=@item.MessageId">@item.MessageId</a></td>
+                        <td style="white-space:nowrap">@Format.LocalTime(item.ReceivedAt)</td>
+                        <td><span class="@Format.StatusCss(item.Status)">@Format.StatusText(item.Status)</span></td>
+                        <td>@(item.CustomerName ?? "–")</td>
+                        <td>@item.HeaderFrom</td>
+                        <td title="@item.EnvelopeTo">@Format.Shorten(item.EnvelopeTo, 50)</td>
+                        <td><a href="/Messages/Details?id=@item.MessageId">@Format.Shorten(item.Subject, 70)</a></td>
+                        <td style="white-space:nowrap">@Format.Size(item.SizeBytes)</td>
+                        <td>@item.AttemptCount</td>
+                        <td class="error-text" title="@item.LastError">@Format.Shorten(item.LastError, 80)</td>
+                    </tr>
+                }
+                @if (Model.Items.Count == 0)
+                {
+                    <tr><td colspan="11" class="muted">Keine Mails gefunden.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</form>
+
+<div class="pager">
+    @if (Model.PageNumber > 1)
+    {
+        <a class="button" asp-page="./Index" asp-all-route-data="@ToDictionary(Model.RouteValuesForPage(Model.PageNumber - 1))">‹ Zurück</a>
+    }
+    <span class="muted">Seite @Model.PageNumber von @Model.PageCount</span>
+    @if (Model.PageNumber < Model.PageCount)
+    {
+        <a class="button" asp-page="./Index" asp-all-route-data="@ToDictionary(Model.RouteValuesForPage(Model.PageNumber + 1))">Weiter ›</a>
+    }
+</div>
+
+@functions {
+    private static Dictionary<string, string> ToDictionary(object values)
+    {
+        return new Microsoft.AspNetCore.Routing.RouteValueDictionary(values)
+            .Where(kv => kv.Value is not null)
+            .ToDictionary(kv => kv.Key, kv => kv.Value.ToString());
+    }
+}

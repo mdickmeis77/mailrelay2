@@ -1,0 +1,54 @@
+@page
+@model Vemas.MailRelay.Pages.Users.IndexModel
+@{
+    ViewData["Title"] = "SMTP-Benutzer";
+}
+
+<h1>SMTP-Benutzer</h1>
+<p class="muted">Anmeldungen (Basic Auth), mit denen SQL Server Database Mail oder SSRS Mails einliefern.</p>
+
+<div class="actions">
+    <a class="button primary" href="/Users/Edit">Neuer Benutzer</a>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Login</th><th>Status</th><th>Profil</th><th>Kunde</th><th>Erlaubte IPs</th><th>Letzte Anmeldung</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td><a href="/Users/Edit?id=@user.SmtpUserId">@user.Login</a></td>
+                    <td>
+                        @if (!user.IsActive)
+                        {
+                            <span class="badge muted">inaktiv</span>
+                        }
+                        else if (!user.HasPassword)
+                        {
+                            <span class="badge err">kein Passwort</span>
+                        }
+                        else if (string.IsNullOrWhiteSpace(user.AllowedIps))
+                        {
+                            <span class="badge warn">keine IP freigegeben</span>
+                        }
+                        else
+                        {
+                            <span class="badge ok">aktiv</span>
+                        }
+                    </td>
+                    <td>@(Model.ProfileNames.TryGetValue(user.ProfileId, out var name) ? name : "–")</td>
+                    <td>@(Model.CustomerNames.TryGetValue(user.ProfileId, out var customerName) ? customerName : "–")</td>
+                    <td class="mono">@user.AllowedIps</td>
+                    <td>@Format.LocalTime(user.LastLoginAt)</td>
+                </tr>
+            }
+            @if (Model.Users.Count == 0)
+            {
+                <tr><td colspan="6" class="muted">Noch kein Benutzer angelegt.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
