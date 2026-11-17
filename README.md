@@ -178,9 +178,10 @@ Die `appsettings.json` neben der EXE im Dienstordner anpassen:
 | `ConnectionStrings:MailRelay` | Relay-Datenbank, Windows-Authentifizierung |
 | `Web:AdminGroup` | AD-Gruppe mit Zugriff auf die Weboberfläche, z.B. `CONTOSO\MailRelay-Admins` |
 | `Smtp:Port` / `Web:Port` | Standard 587 / 8587 |
-| `Smtp:CertificateThumbprint` | optional: Zertifikat (LocalMachine\My) für STARTTLS |
-| `Smtp:RequireTls` | optional: AUTH nur nach STARTTLS |
-| `Web:CertificateThumbprint` | optional: Zertifikat für HTTPS |
+| `Smtp:CertificateThumbprint` | empfohlen: Zertifikat (LocalMachine\My) für STARTTLS. Ohne Zertifikat gehen SMTP-Passwörter unverschlüsselt übers Netz |
+| `Smtp:RequireTls` | Standard `true`: mit Zertifikat AUTH erst nach STARTTLS |
+| `Web:CertificateThumbprint` | Zertifikat (LocalMachine\My) für HTTPS. **Ohne Zertifikat ist die Weboberfläche nur lokal auf dem Server erreichbar** (`http://localhost:8587/`) |
+| `Web:AllowUnencrypted` | Standard `false`. `true`: ohne Zertifikat trotzdem per HTTP von anderen Rechnern erreichbar – Client Secrets und Passwörter gehen dann im Klartext übers Netz |
 | `Sending:RetryDelaysMinutes` | Wartezeiten vor den Wiederholungen, Standard `[1, 5, 15, 60, 240]` |
 | `Sending:MaxParallel` | parallele Versendungen, Standard 4 |
 | `Maintenance:MimeRetentionDays` | MIME-Inhalt löschen nach, Standard 30 Tage |
@@ -236,14 +237,16 @@ setspn -S HTTP/mailrelay01.contoso.local CONTOSO\svc-mailrelay
 
 ## 6. Profil und SMTP-Benutzer anlegen
 
-Weboberfläche: `http://<server>:8587/`
+Weboberfläche: `https://<server>:8587/` (mit `Web:CertificateThumbprint`), ohne Zertifikat nur auf dem Server selbst
+unter `http://localhost:8587/`.
 
 1. **Profile → Neues Profil**: Tenant-ID, Client-ID, Client Secret, Ablaufdatum, Modus, Standard-Postfach.
    - **Fester Absender**: Jede Mail geht über das Standard-Postfach und mit ihm als Absender. Der ursprüngliche
      Absender wird zur Antwortadresse (Reply-To).
    - **Senden als**: Jede Mail geht über das Standard-Postfach (A), als Absender bleibt die Adresse aus der Mail (B)
      stehen. A braucht in Exchange „Senden als“ auf B (Abschnitt 2). Die Liste *Erlaubte Absender* filtert zusätzlich
-     schon beim SMTP-Eingang: Andere Absender werden mit `5.7.1 Absender nicht erlaubt` abgewiesen.
+     schon beim SMTP-Eingang: Andere Absender werden mit `5.7.1 Absender nicht erlaubt` abgewiesen, ebenso Mails
+     mit mehr als einer Adresse im From-Kopf.
 2. **Testmail senden** auf der Profilseite – prüft Anmeldung und Exchange-Berechtigung. Ergebnis im Verlauf.
 3. **SMTP-Benutzer → Neuer Benutzer**: Login, Passwort (mind. 12 Zeichen), Profil, erlaubte IPs der SQL-/SSRS-Server.
    Ohne IP-Eintrag ist keine Anmeldung möglich.
@@ -261,7 +264,7 @@ EXEC msdb.dbo.sysmail_update_account_sp
     @email_address           = N'reports@firma.de',      -- muss zum Profil passen
     @mailserver_name         = N'mailrelay01',
     @port                    = 587,
-    @enable_ssl              = 0,                        -- 1 nur mit Smtp:CertificateThumbprint
+    @enable_ssl              = 1,                        -- 1 mit Smtp:CertificateThumbprint (Pflicht bei RequireTls), sonst 0
     @username                = N'sqlmail',               -- SMTP-Benutzer aus der Weboberfläche
     @password                = N'<Passwort>',
     @use_default_credentials = 0;
@@ -309,7 +312,7 @@ Port und SSL in `rsreportserver.config` (unter `<RSEmailDPConfiguration>`), dana
 
 ```xml
 <SMTPServerPort>587</SMTPServerPort>
-<SMTPUseSSL>False</SMTPUseSSL>
+<SMTPUseSSL>True</SMTPUseSSL>   <!-- True mit Smtp:CertificateThumbprint, sonst False -->
 <SendUsing>2</SendUsing>
 <SMTPAuthenticate>1</SMTPAuthenticate>
 ```
@@ -365,3 +368,5 @@ UPDATE mailrelay.SmtpUser SET PasswordPlain = N'<neues Passwort>'               
 | `Graph 403 ErrorSendAsDenied` | Standard-Postfach hat kein „Senden als“-Recht auf den Absender → `Add-RecipientPermission` (Abschnitt 2) |
 | Dienst startet nicht, Fehler 1069 | Dienstkonto fehlt das Recht „Als Dienst anmelden“ |
 | Weboberfläche: 403 | Benutzer ist nicht in `Web:AdminGroup` (nach Gruppenänderung neu anmelden) |
+| Weboberfläche von anderen Rechnern nicht erreichbar | Kein Zertifikat hinterlegt → nur `http://localhost:8587/` auf dem Server. `Web:CertificateThumbprint` setzen |
+| Nach Einrichtung des SMTP-Zertifikats schlägt die SMTP-Anmeldung fehl | `Smtp:RequireTls` ist aktiv → in Database Mail `@enable_ssl = 1`, in SSRS `SMTPUseSSL` auf `True` |

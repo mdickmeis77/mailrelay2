@@ -52,10 +52,12 @@ public sealed class RelayMessageStore : IMessageStore
             return new SmtpResponse(SmtpReplyCode.TransactionFailed, "5.6.0 Mail nicht lesbar");
         }
 
-        string headerFrom = message.From.Mailboxes.FirstOrDefault()?.Address;
-        if (!SenderPolicy.IsAllowed(profile, headerFrom))
+        var headerFromAddresses = message.From.Mailboxes.Select(m => m.Address).ToList();
+        string headerFrom = headerFromAddresses.FirstOrDefault();
+        if (!SenderPolicy.IsAllowed(profile, headerFromAddresses))
         {
-            _logger.LogWarning("Absender '{From}' (Header) für Profil '{Profile}' nicht erlaubt.", headerFrom, profile.Name);
+            _logger.LogWarning("Absender '{From}' (Header) für Profil '{Profile}' nicht erlaubt.",
+                string.Join(", ", headerFromAddresses), profile.Name);
             return new SmtpResponse(SmtpReplyCode.MailboxUnavailable, "5.7.1 Absender nicht erlaubt");
         }
 

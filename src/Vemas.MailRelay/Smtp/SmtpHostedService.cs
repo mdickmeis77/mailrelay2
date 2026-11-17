@@ -59,6 +59,11 @@ public sealed class SmtpHostedService : BackgroundService
 
         var server = new SmtpServer.SmtpServer(serverOptions, serviceProvider);
         _logger.LogInformation("SMTP-Eingang lauscht auf Port {Port} (STARTTLS: {Tls}).", _options.Port, certificate is not null);
+        if (allowAuthWithoutTls)
+        {
+            _logger.LogWarning("SMTP-Anmeldung ohne STARTTLS erlaubt: Passwörter werden unverschlüsselt übertragen. " +
+                "Smtp:CertificateThumbprint setzen und Smtp:RequireTls auf true lassen.");
+        }
 
         try
         {

@@ -91,6 +91,11 @@
         </div>
     </header>
     <main>
+        @if (!Context.Request.IsHttps && !System.Net.IPAddress.IsLoopback(Context.Connection.RemoteIpAddress ?? System.Net.IPAddress.None))
+        {
+            <div class="alert err">Unverschlüsselte Verbindung: Client Secrets und Passwörter werden im Klartext übertragen.
+                Für die Weboberfläche ein Zertifikat hinterlegen (Web:CertificateThumbprint).</div>
+        }
         @if (TempData["Message"] is string message)
         {
             <div class="alert ok">@message</div>

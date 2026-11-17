@@ -159,5 +159,6 @@ Write-Host "Starte Dienst $serviceName ..."
 Start-Service -Name $serviceName
 (Get-Service -Name $serviceName).WaitForStatus('Running', [TimeSpan]::FromSeconds(60))
 Write-Host ""
-Write-Host "Fertig. Weboberfläche: http://$($env:COMPUTERNAME):$WebPort/" -ForegroundColor Green
+Write-Host "Fertig. Weboberfläche: https://$($env:COMPUTERNAME):$WebPort/ (mit Web:CertificateThumbprint)" -ForegroundColor Green
+Write-Host "Ohne Zertifikat nur lokal auf diesem Server erreichbar: http://localhost:$WebPort/"
 Write-Host "Meldungen: Ereignisanzeige > Windows-Protokolle > Anwendung, Quelle '$serviceName'."

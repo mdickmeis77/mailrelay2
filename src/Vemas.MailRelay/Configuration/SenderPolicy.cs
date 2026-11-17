@@ -8,6 +8,20 @@ public static class SenderPolicy
     private const string DomainWildcardPrefix = "*@";
 
     /// <summary>
+    /// Prüft alle Absenderadressen aus dem From-Kopf. Bei "Senden als" muss es genau eine sein:
+    /// sonst könnte neben einer erlaubten Adresse eine beliebige weitere im Kopf stehen.
+    /// </summary>
+    public static bool IsAllowed(RelayProfile profile, IReadOnlyList<string> headerFromAddresses)
+    {
+        if (profile.SenderMode == SenderMode.FixedSender)
+        {
+            return true;
+        }
+
+        return headerFromAddresses.Count == 1 && IsAllowed(profile, headerFromAddresses[0]);
+    }
+
+    /// <summary>
     /// FixedSender: jeder Absender wird angenommen (er wird beim Versand ohnehin ersetzt).
     /// SendAs: Absender muss dem Standard-Absender oder einem Eintrag der Liste entsprechen.
     /// </summary>

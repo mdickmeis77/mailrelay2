@@ -17,6 +17,6 @@ public sealed class SmtpOptions
     /// <summary>Optional: Thumbprint eines Zertifikats (LocalMachine\My) für STARTTLS.</summary>
     public string CertificateThumbprint { get; set; } = string.Empty;
 
-    /// <summary>Nur relevant mit Zertifikat: AUTH erst nach STARTTLS erlauben.</summary>
-    public bool RequireTls { get; set; }
+    /// <summary>Nur relevant mit Zertifikat: AUTH erst nach STARTTLS erlauben (Standard).</summary>
+    public bool RequireTls { get; set; } = true;
 }

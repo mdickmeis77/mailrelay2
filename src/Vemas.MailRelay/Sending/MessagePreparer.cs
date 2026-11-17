@@ -50,14 +50,15 @@ public static class MessagePreparer
     /// </summary>
     private static string ApplySendAs(MimeMessage message, RelayProfile profile)
     {
-        var from = message.From.Mailboxes.FirstOrDefault();
-        if (from is null)
+        var fromAddresses = message.From.Mailboxes.Select(m => m.Address).ToList();
+        if (fromAddresses.Count == 0)
         {
             message.From.Add(MailboxAddress.Parse(profile.DefaultSender));
         }
-        else if (!SenderPolicy.IsAllowed(profile, from.Address))
+        else if (!SenderPolicy.IsAllowed(profile, fromAddresses))
         {
-            throw new PermanentSendException($"Absender '{from.Address}' ist für Profil '{profile.Name}' nicht erlaubt.");
+            throw new PermanentSendException(
+                $"Absender '{string.Join(", ", fromAddresses)}' ist für Profil '{profile.Name}' nicht erlaubt (genau ein erlaubter Absender nötig).");
         }
 
         return profile.DefaultSender;

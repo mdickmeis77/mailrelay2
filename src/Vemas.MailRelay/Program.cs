@@ -72,16 +72,22 @@ builder.Services.AddHostedService<MaintenanceService>();
 
 // Weboberfläche: Kestrel, Windows-Anmeldung, Zugriff nur für die Admin-Gruppe
 var webOptions = builder.Configuration.GetSection(WebOptions.SectionName).Get<WebOptions>() ?? new WebOptions();
+var webCertificate = CertificateLoader.FindInMachineStore(webOptions.CertificateThumbprint);
 builder.WebHost.ConfigureKestrel(kestrel =>
 {
-    var certificate = CertificateLoader.FindInMachineStore(webOptions.CertificateThumbprint);
-    kestrel.ListenAnyIP(webOptions.Port, listen =>
+    // Ohne Zertifikat nur lokal: Client Secrets und Passwörter sollen nicht unverschlüsselt durchs Netz gehen.
+    if (webCertificate is not null)
     {
-        if (certificate is not null)
-        {
-            listen.UseHttps(certificate);
-        }
-    });
+        kestrel.ListenAnyIP(webOptions.Port, listen => listen.UseHttps(webCertificate));
+    }
+    else if (webOptions.AllowUnencrypted)
+    {
+        kestrel.ListenAnyIP(webOptions.Port);
+    }
+    else
+    {
+        kestrel.ListenLocalhost(webOptions.Port);
+    }
 });
 
 builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme).AddNegotiate();
@@ -118,5 +124,15 @@ app.MapRazorPages();
 
 app.Logger.LogInformation("{Service} {Version} startet. Weboberfläche auf Port {Port}, Admin-Gruppe '{Group}'.",
     ServiceName, typeof(Program).Assembly.GetName().Version, webOptions.Port, webOptions.AdminGroup);
+if (webCertificate is null && webOptions.AllowUnencrypted)
+{
+    app.Logger.LogWarning("Weboberfläche ohne Zertifikat von allen Rechnern per HTTP erreichbar (Web:AllowUnencrypted). " +
+        "Client Secrets und Passwörter werden unverschlüsselt übertragen - Web:CertificateThumbprint setzen.");
+}
+else if (webCertificate is null)
+{
+    app.Logger.LogWarning("Kein Zertifikat für die Weboberfläche (Web:CertificateThumbprint): nur lokal auf diesem Server " +
+        "erreichbar (http://localhost:{Port}/).", webOptions.Port);
+}
 
 await app.RunAsync();
