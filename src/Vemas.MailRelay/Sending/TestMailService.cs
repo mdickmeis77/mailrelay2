@@ -47,8 +47,7 @@ public sealed class TestMailService
             HeaderFrom = profile.DefaultSender,
             HeaderTo = recipient,
             Subject = message.Subject,
-            Mime = mime,
-            Content = MessageContentExtractor.Extract(message)
+            Mime = mime
         }, cancellationToken);
 
         _queueSignal.Notify();

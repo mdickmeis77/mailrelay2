@@ -69,8 +69,7 @@ public sealed class RelayMessageStore : IMessageStore
             HeaderFrom = headerFrom,
             HeaderTo = string.Join("; ", message.To.Mailboxes.Concat(message.Cc.Mailboxes).Select(m => m.Address)),
             Subject = message.Subject,
-            Mime = mime,
-            Content = MessageContentExtractor.Extract(message)
+            Mime = mime
         };
 
         try

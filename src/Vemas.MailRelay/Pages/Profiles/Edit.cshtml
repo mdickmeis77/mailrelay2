@@ -41,17 +41,6 @@
             <span class="hint">Für die Ablaufwarnung (aus dem Entra-Portal übernehmen).</span>
         </div>
         <div class="field">
-            <label asp-for="Input.CustomerId">Kunde (Zugriff aus NextGen)</label>
-            <select asp-for="Input.CustomerId">
-                <option value="">– kein Kunde, nur Hoster –</option>
-                @foreach (var customer in Model.Customers)
-                {
-                    <option value="@customer.CustomerId">@customer.Name (@customer.ShortName)</option>
-                }
-            </select>
-            <span class="hint">Der Kunde sieht dieses Profil, dessen Mails und SMTP-Benutzer in seiner NextGen-Instanz.</span>
-        </div>
-        <div class="field">
             <label><input type="checkbox" asp-for="Input.IsActive" /> Profil aktiv</label>
         </div>
     </div>

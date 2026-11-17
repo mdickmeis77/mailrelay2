@@ -8,7 +8,7 @@ namespace Vemas.MailRelay.Data;
 public sealed class MessageLogRepository
 {
     private const string ListColumns = """
-        m.MessageId, m.ReceivedAt, u.Login AS SmtpUser, p.Name AS ProfileName, c.Name AS CustomerName, m.HeaderFrom, m.EnvelopeTo,
+        m.MessageId, m.ReceivedAt, u.Login AS SmtpUser, p.Name AS ProfileName, m.HeaderFrom, m.EnvelopeTo,
         m.Subject, m.SizeBytes, m.Status, m.AttemptCount, m.SentAt, m.LastError,
         CAST(CASE WHEN m.Mime IS NULL THEN 0 ELSE 1 END AS BIT) AS HasMime
         """;
@@ -17,12 +17,10 @@ public sealed class MessageLogRepository
         FROM mailrelay.Message m
         LEFT JOIN mailrelay.SmtpUser u ON u.SmtpUserId = m.SmtpUserId
         LEFT JOIN mailrelay.Profile  p ON p.ProfileId  = m.ProfileId
-        LEFT JOIN mailrelay.Customer c ON c.CustomerId = m.CustomerId
         """;
 
     private const string SearchWhere = """
         WHERE (@Status IS NULL OR m.Status = @Status)
-          AND (@CustomerId IS NULL OR m.CustomerId = @CustomerId)
           AND (@FromUtc IS NULL OR m.ReceivedAt >= @FromUtc)
           AND (@ToUtc   IS NULL OR m.ReceivedAt <  @ToUtc)
           AND (@Search  IS NULL OR m.HeaderFrom LIKE @Search OR m.EnvelopeTo LIKE @Search OR m.Subject LIKE @Search)
@@ -47,7 +45,6 @@ public sealed class MessageLogRepository
         await using var connection = await _connectionFactory.OpenAsync(cancellationToken);
         await using var command = connection.CreateCommand(sql);
         command.Add("@Status", string.IsNullOrEmpty(filter.Status) ? null : filter.Status);
-        command.Add("@CustomerId", filter.CustomerId);
         command.Add("@FromUtc", filter.FromDate?.Date.ToUniversalTime());
         command.Add("@ToUtc", filter.ToDate?.Date.AddDays(1).ToUniversalTime());
         command.Add("@Search", string.IsNullOrWhiteSpace(filter.Search) ? null : $"%{filter.Search.Trim()}%");
@@ -160,7 +157,6 @@ public sealed class MessageLogRepository
             ReceivedAt = reader.GetDateTime(reader.GetOrdinal("ReceivedAt")).AsUtc(),
             SmtpUser = reader.GetStringOrNull("SmtpUser"),
             ProfileName = reader.GetStringOrNull("ProfileName"),
-            CustomerName = reader.GetStringOrNull("CustomerName"),
             HeaderFrom = reader.GetStringOrNull("HeaderFrom"),
             EnvelopeTo = reader.GetString(reader.GetOrdinal("EnvelopeTo")),
             Subject = reader.GetStringOrNull("Subject"),

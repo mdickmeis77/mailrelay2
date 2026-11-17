@@ -4,8 +4,6 @@ namespace Vemas.MailRelay.Domain;
 public sealed class RelayProfile
 {
     public int ProfileId { get; set; }
-    public int? CustomerId { get; set; }
-    public string CustomerName { get; set; }
     public string Name { get; set; } = string.Empty;
     public string TenantId { get; set; } = string.Empty;
     public string ClientId { get; set; } = string.Empty;

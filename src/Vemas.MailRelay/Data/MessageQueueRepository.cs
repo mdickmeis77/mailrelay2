@@ -9,11 +9,9 @@ public sealed class MessageQueueRepository
 
     private const string InsertSql = """
         INSERT INTO mailrelay.Message
-            (SmtpUserId, ProfileId, CustomerId, ClientIp, EnvelopeFrom, EnvelopeTo, HeaderFrom, HeaderTo, Subject, SizeBytes, Mime, Status,
-             HeaderCc, ReplyTo, BodyText, AttachmentNames)
+            (SmtpUserId, ProfileId, ClientIp, EnvelopeFrom, EnvelopeTo, HeaderFrom, HeaderTo, Subject, SizeBytes, Mime, Status)
         OUTPUT inserted.MessageId
-        SELECT @SmtpUserId, @ProfileId, p.CustomerId, @ClientIp, @EnvelopeFrom, @EnvelopeTo, @HeaderFrom, @HeaderTo, @Subject, @SizeBytes, @Mime, 'Queued',
-               @HeaderCc, @ReplyTo, @BodyText, @AttachmentNames
+        SELECT @SmtpUserId, @ProfileId, @ClientIp, @EnvelopeFrom, @EnvelopeTo, @HeaderFrom, @HeaderTo, @Subject, @SizeBytes, @Mime, 'Queued'
           FROM mailrelay.Profile p
          WHERE p.ProfileId = @ProfileId;
         """;
@@ -78,10 +76,6 @@ public sealed class MessageQueueRepository
         command.Add("@Subject", Truncate(message.Subject, 1000));
         command.Add("@SizeBytes", message.Mime.Length);
         command.AddBinary("@Mime", message.Mime);
-        command.Add("@HeaderCc", message.Content.HeaderCc);
-        command.Add("@ReplyTo", Truncate(message.Content.ReplyTo, 320));
-        command.Add("@BodyText", message.Content.BodyText);
-        command.Add("@AttachmentNames", message.Content.AttachmentNames);
 
         object id = await command.ExecuteScalarAsync(cancellationToken);
         return id is null ? throw new InvalidOperationException($"Profil {message.ProfileId} existiert nicht.") : Convert.ToInt64(id);

@@ -15,7 +15,7 @@
     - legt Firewall-Regeln für SMTP- und Web-Port an
     - startet den Dienst
 
-    Vorher: Install-Database.sql auf der NextGen-Datenbank ausführen.
+    Vorher: Install-Database.sql auf der Relay-Datenbank ausführen.
 
 .PARAMETER ServiceAccount
     Dienstkonto, z.B. "DOMAENE\svc-mailrelay" oder ein gMSA "DOMAENE\gmsa-mailrelay$".

@@ -14,7 +14,7 @@
 <div class="table-wrap">
     <table>
         <thead>
-            <tr><th>Login</th><th>Status</th><th>Profil</th><th>Kunde</th><th>Erlaubte IPs</th><th>Letzte Anmeldung</th></tr>
+            <tr><th>Login</th><th>Status</th><th>Profil</th><th>Erlaubte IPs</th><th>Letzte Anmeldung</th></tr>
         </thead>
         <tbody>
             @foreach (var user in Model.Users)
@@ -40,14 +40,13 @@
                         }
                     </td>
                     <td>@(Model.ProfileNames.TryGetValue(user.ProfileId, out var name) ? name : "–")</td>
-                    <td>@(Model.CustomerNames.TryGetValue(user.ProfileId, out var customerName) ? customerName : "–")</td>
                     <td class="mono">@user.AllowedIps</td>
                     <td>@Format.LocalTime(user.LastLoginAt)</td>
                 </tr>
             }
             @if (Model.Users.Count == 0)
             {
-                <tr><td colspan="6" class="muted">Noch kein Benutzer angelegt.</td></tr>
+                <tr><td colspan="5" class="muted">Noch kein Benutzer angelegt.</td></tr>
             }
         </tbody>
     </table>

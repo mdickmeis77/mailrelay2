@@ -16,14 +16,12 @@ public sealed class EditModel : PageModel
     private const string WildcardPrefix = "*@";
 
     private readonly ProfileRepository _profileRepository;
-    private readonly CustomerRepository _customerRepository;
     private readonly RelayConfigCache _cache;
     private readonly TestMailService _testMailService;
 
-    public EditModel(ProfileRepository profileRepository, CustomerRepository customerRepository, RelayConfigCache cache, TestMailService testMailService)
+    public EditModel(ProfileRepository profileRepository, RelayConfigCache cache, TestMailService testMailService)
     {
         _profileRepository = profileRepository;
-        _customerRepository = customerRepository;
         _cache = cache;
         _testMailService = testMailService;
     }
@@ -35,11 +33,8 @@ public sealed class EditModel : PageModel
 
     public bool IsNew => Input.ProfileId == 0;
 
-    public List<Domain.Customer> Customers { get; private set; } = [];
-
     public async Task<IActionResult> OnGetAsync(int? id)
     {
-        Customers = await _customerRepository.GetAllAsync(HttpContext.RequestAborted);
         if (id is null)
         {
             return Page();
@@ -59,7 +54,6 @@ public sealed class EditModel : PageModel
     public async Task<IActionResult> OnPostAsync()
     {
         var cancellationToken = HttpContext.RequestAborted;
-        Customers = await _customerRepository.GetAllAsync(cancellationToken);
         var existing = IsNew ? null : await _profileRepository.GetAsync(Input.ProfileId, cancellationToken);
         HasSecret = existing?.HasSecret ?? false;
 

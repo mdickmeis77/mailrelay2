@@ -2,7 +2,7 @@ using Microsoft.Data.SqlClient;
 
 namespace Vemas.MailRelay.Data;
 
-/// <summary>Erzeugt geöffnete Verbindungen zur NextGen-Datenbank (Schema mailrelay).</summary>
+/// <summary>Erzeugt geöffnete Verbindungen zur Relay-Datenbank (Schema mailrelay).</summary>
 public sealed class SqlConnectionFactory
 {
     public const string ConnectionStringName = "MailRelay";

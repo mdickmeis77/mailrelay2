@@ -15,7 +15,7 @@
 <div class="table-wrap">
     <table>
         <thead>
-            <tr><th>Name</th><th>Kunde</th><th>Status</th><th>Modus</th><th>Standard-Postfach</th><th>Tenant</th><th>Client Secret</th></tr>
+            <tr><th>Name</th><th>Status</th><th>Modus</th><th>Standard-Postfach</th><th>Tenant</th><th>Client Secret</th></tr>
         </thead>
         <tbody>
             @foreach (var profile in Model.Profiles)
@@ -23,7 +23,6 @@
                 int? days = SecretExpiry.DaysRemaining(profile);
                 <tr>
                     <td><a href="/Profiles/Edit?id=@profile.ProfileId">@profile.Name</a></td>
-                    <td>@(profile.CustomerName ?? "–")</td>
                     <td>
                         @if (profile.IsActive)
                         {
@@ -59,7 +58,7 @@
             }
             @if (Model.Profiles.Count == 0)
             {
-                <tr><td colspan="7" class="muted">Noch kein Profil angelegt.</td></tr>
+                <tr><td colspan="6" class="muted">Noch kein Profil angelegt.</td></tr>
             }
         </tbody>
     </table>

@@ -8,9 +8,6 @@ public sealed class ProfileInput
 {
     public int ProfileId { get; set; }
 
-    /// <summary>Optional: Kunde, der das Profil in NextGen sieht und bearbeiten darf.</summary>
-    public int? CustomerId { get; set; }
-
     [Required(ErrorMessage = "Name ist erforderlich.")]
     [StringLength(100)]
     public string Name { get; set; }
@@ -47,7 +44,6 @@ public sealed class ProfileInput
         return new ProfileInput
         {
             ProfileId = profile.ProfileId,
-            CustomerId = profile.CustomerId,
             Name = profile.Name,
             TenantId = profile.TenantId,
             ClientId = profile.ClientId,
@@ -64,7 +60,6 @@ public sealed class ProfileInput
         return new RelayProfile
         {
             ProfileId = ProfileId,
-            CustomerId = CustomerId,
             Name = Name,
             TenantId = TenantId,
             ClientId = ClientId,

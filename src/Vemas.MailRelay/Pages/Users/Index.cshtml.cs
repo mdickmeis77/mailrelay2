@@ -20,13 +20,9 @@ public sealed class IndexModel : PageModel
 
     public Dictionary<int, string> ProfileNames { get; private set; } = [];
 
-    public Dictionary<int, string> CustomerNames { get; private set; } = [];
-
     public async Task OnGetAsync()
     {
         Users = await _smtpUserRepository.GetAllAsync(HttpContext.RequestAborted);
         var profiles = await _profileRepository.GetAllAsync(HttpContext.RequestAborted);
-        ProfileNames = profiles.ToDictionary(p => p.ProfileId, p => p.Name);
-        CustomerNames = profiles.Where(p => p.CustomerName != null).ToDictionary(p => p.ProfileId, p => p.CustomerName);
-    }
+        ProfileNames = profiles.ToDictionary(p => p.ProfileId, p => p.Name);    }
 }

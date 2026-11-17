@@ -38,8 +38,6 @@ builder.Services.AddSingleton<MessageQueueRepository>();
 builder.Services.AddSingleton<MessageLogRepository>();
 builder.Services.AddSingleton<MaintenanceRepository>();
 builder.Services.AddSingleton<DashboardRepository>();
-builder.Services.AddSingleton<CustomerRepository>();
-builder.Services.AddSingleton<TestMailRequestRepository>();
 builder.Services.AddSingleton<DatabaseMailRepository>();
 builder.Services.AddSingleton<RelayConfigCache>();
 
@@ -71,7 +69,6 @@ builder.Services.AddHostedService<ConfigRefreshService>();
 builder.Services.AddHostedService<SmtpHostedService>();
 builder.Services.AddHostedService<SendWorker>();
 builder.Services.AddHostedService<MaintenanceService>();
-builder.Services.AddHostedService<TestMailRequestService>();
 
 // Weboberfläche: Kestrel, Windows-Anmeldung, Zugriff nur für die Admin-Gruppe
 var webOptions = builder.Configuration.GetSection(WebOptions.SectionName).Get<WebOptions>() ?? new WebOptions();

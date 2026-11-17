@@ -12,23 +12,16 @@ public sealed class IndexModel : PageModel
     private const int PageSize = 50;
 
     private readonly MessageLogRepository _logRepository;
-    private readonly CustomerRepository _customerRepository;
     private readonly QueueSignal _queueSignal;
 
-    public IndexModel(MessageLogRepository logRepository, CustomerRepository customerRepository, QueueSignal queueSignal)
+    public IndexModel(MessageLogRepository logRepository, QueueSignal queueSignal)
     {
         _logRepository = logRepository;
-        _customerRepository = customerRepository;
         _queueSignal = queueSignal;
     }
 
     [BindProperty(SupportsGet = true)]
     public string Status { get; set; }
-
-    [BindProperty(SupportsGet = true)]
-    public int? CustomerId { get; set; }
-
-    public List<Customer> Customers { get; private set; } = [];
 
     [BindProperty(SupportsGet = true)]
     public DateTime? FromDate { get; set; }
@@ -51,11 +44,9 @@ public sealed class IndexModel : PageModel
 
     public async Task OnGetAsync()
     {
-        Customers = await _customerRepository.GetAllAsync(HttpContext.RequestAborted);
         var filter = new MessageFilter
         {
             Status = Status,
-            CustomerId = CustomerId,
             FromDate = FromDate,
             ToDate = ToDate,
             Search = Search,
@@ -106,7 +97,6 @@ public sealed class IndexModel : PageModel
         return new
         {
             Status,
-            CustomerId,
             FromDate = FromDate?.ToString("yyyy-MM-dd"),
             ToDate = ToDate?.ToString("yyyy-MM-dd"),
             Search,

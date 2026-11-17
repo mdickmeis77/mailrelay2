@@ -4,7 +4,6 @@ namespace Vemas.MailRelay.Domain;
 public sealed class MessageFilter
 {
     public string Status { get; set; }
-    public int? CustomerId { get; set; }
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
 

@@ -7,7 +7,6 @@ public sealed class MessageListItem
     public DateTime ReceivedAt { get; set; }
     public string SmtpUser { get; set; }
     public string ProfileName { get; set; }
-    public string CustomerName { get; set; }
     public string HeaderFrom { get; set; }
     public string EnvelopeTo { get; set; }
     public string Subject { get; set; }
